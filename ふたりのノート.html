@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ふたりのノート</title>
+<style>
+:root{--bg:#fff;--surf:#f5f6f8;--tx:#16181d;--sub:#6b7280;--line:#e5e7eb;--ac:#3b4cca;--ac-tx:#fff;--yes:#16a37a;--no:#e0653a;--gap:#e0a41b;
+--c0:#3b82f6;--c1:#10b981;--c2:#f59e0b;--c3:#a855f7;--c4:#ec4899;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--surf:#1a1d24;--tx:#eef0f4;--sub:#9aa1ad;--line:#2a2f39;--ac:#7c8cff;--ac-tx:#0f1115}}
+:root[data-theme="dark"]{--bg:#0f1115;--surf:#1a1d24;--tx:#eef0f4;--sub:#9aa1ad;--line:#2a2f39;--ac:#7c8cff;--ac-tx:#0f1115}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;line-height:1.6;-webkit-tap-highlight-color:transparent}
+main{max-width:480px;margin:0 auto;padding:20px 20px 40px;min-height:100vh}
+h1{font-size:34px;letter-spacing:.04em;margin:0 0 8px;font-weight:600}
+h2{font-size:20px;margin:0 0 12px}
+p{margin:0 0 12px}.sub{color:var(--sub);font-size:14px}
+.cover{min-height:85vh;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.cover .tag{font-size:13px;letter-spacing:.2em;color:var(--sub)}
+.cover .line{width:40px;height:2px;background:var(--tx);margin:20px 0}
+.btn{display:block;width:100%;padding:16px;border:0;border-radius:14px;font-size:16px;font-weight:600;background:var(--ac);color:var(--ac-tx);cursor:pointer;margin-top:12px;font-family:inherit}
+.btn.ghost{background:var(--surf);color:var(--tx)}
+.btn:active{opacity:.8}
+input[type=text]{width:100%;padding:14px;font-size:16px;border:1px solid var(--line);border-radius:12px;background:var(--surf);color:var(--tx);font-family:inherit}
+.prog{height:4px;background:var(--line);border-radius:2px;margin:8px 0 28px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ac);transition:width .3s}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--sub)}
+.chip{display:inline-block;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;color:#fff}
+.q{font-size:22px;font-weight:600;line-height:1.5;margin:24px 0 36px;min-height:100px}
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.yn button{padding:26px 0;font-size:20px;font-weight:700;border-radius:16px;border:2px solid var(--line);background:var(--surf);color:var(--tx);cursor:pointer;font-family:inherit}
+.yn button.on.y{border-color:var(--yes);background:var(--yes);color:#fff}
+.yn button.on.n{border-color:var(--no);background:var(--no);color:#fff}
+.back{background:none;border:0;color:var(--sub);font-size:14px;padding:12px 0;cursor:pointer;font-family:inherit}
+.card{background:var(--surf);border-radius:16px;padding:16px;margin-bottom:12px}
+.code{font-size:26px;font-weight:700;letter-spacing:.1em;word-break:break-all;margin:6px 0}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.sum div{background:var(--surf);border-radius:14px;padding:14px 4px;text-align:center}
+.sum b{display:block;font-size:26px}.sum span{font-size:11px;color:var(--sub)}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--line);margin:8px 0}
+.bar i{display:block}
+details{background:var(--surf);border-radius:16px;margin-bottom:10px;overflow:hidden}
+summary{padding:16px;cursor:pointer;list-style:none;font-weight:600}
+summary::-webkit-details-marker{display:none}
+.row{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;border-top:1px solid var(--line);font-size:14px}
+.row .t{flex:1}
+.b{flex:none;font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;color:#fff;white-space:nowrap}
+.b.m{background:var(--yes)}.b.g{background:var(--gap)}.b.x{background:var(--no)}
+.who{font-size:11px;color:var(--sub);display:block}
+ol{padding-left:20px;margin:0}li{margin-bottom:6px;font-size:14px}
+</style></head><body><main id="app"></main>
+<script>
+const T=[["お金","--c0",["今の家計に安心を感じている","毎月の収支を把握できている","自分が自由に使えるお金に納得している","貯金や資産の状況を2人で共有できている","大きな買い物の決め方に納得している","老後資金の見通しが立っている","教育費・住居費など将来の出費を話せている","保険や相続など、もしもの備えを話せている","お金の話を気まずさなく切り出せる","今いちばん2人で決めたいお金の課題がはっきりしている"]],
+["健康","--c1",["今の自分の体調に満足している","睡眠や休息は足りている","心に余裕がある","運動や食事などの習慣に納得している","健診や通院をきちんとできている","相手の体調や疲れに気づけている","しんどいとき、相手に正直に言える","将来の病気や介護の不安を話せている","2人で健康のために何かしたい気持ちがある","自分の健康のために変えたいことがはっきりしている"]],
+["家族","--c2",["家事の分担に納得している","育児(または日々の役割)の分担に納得している","家族で過ごす時間の量に満足している","家族で過ごす時間の質に満足している","家庭で自分の意見を聞いてもらえている","子どもの教育方針を共有できている","家族の中で感謝を伝え合えている","家の中の雰囲気に居心地のよさを感じている","家族の予定をうまく調整できている","5年後の家族の姿を2人でイメージできている"]],
+["親のこと","--c3",["自分の親の今の状況を把握している","相手の親の今の状況を把握している","親との距離感や連絡頻度に納得している","親への気遣いや負担が公平だと感じる","親の介護について考えたことがある","同居・近居の可能性を話せている","親の健康やお金のことを、親本人と話せている","親のことで、相手に気を遣わず言いたいことが言える","親のことを夫婦2人で話せている","親のことで今いちばん不安なことがはっきりしている"]],
+["自分たちのこと","--c4",["夫婦2人だけで過ごす時間に満足している","日常の会話の量と質に満足している","相手に大切にされていると感じる","自分は相手を大切にできていると思う","スキンシップや愛情表現に満足している","自分のやりたいことが尊重されていると感じる","相手のやりたいことを応援できている","ケンカのあと、うまく仲直りできている","2人の将来の夢や楽しみを話せている","今の夫婦関係に総合的に満足している"]]];
+const Q=[];T.forEach((t,i)=>t[2].forEach(q=>Q.push({t:i,q})));
+const KEY="futari-note-v1";
+let S={names:["",""],ans:[[],[]],cur:0,done:[false,false]},v="cover",i=0;
+try{const r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nm=k=>S.names[k]||(k?"パートナー":"あなた");
+const $=h=>document.getElementById("app").innerHTML=h;
+function enc(a){return parseInt("1"+a.map(x=>x?1:0).join(""),2).toString(16).toUpperCase()}
+function dec(c){try{const b=parseInt(c.trim(),16).toString(2);if(b.length!==51||b[0]!=="1")return null;return b.slice(1).split("").map(Number)}catch(e){return null}}
+const HK="futari-note-hist-v1";let hi=0;
+function HL(){try{return JSON.parse(localStorage.getItem(HK))||[]}catch(e){return[]}}
+function snap(){if(S.saved)return;const l=HL();l.unshift({d:new Date().toISOString(),n:S.names.slice(),a:S.ans[0].slice(),b:S.ans[1].slice()});try{localStorage.setItem(HK,JSON.stringify(l.slice(0,50)))}catch(e){}S.saved=true;save()}
+function delH(k){if(!confirm('この記録を削除しますか？'))return;const l=HL();l.splice(k,1);try{localStorage.setItem(HK,JSON.stringify(l))}catch(e){}go('hist')}
+function hist(){const l=HL();$(`<button class="back" onclick="go('cover')">← 表紙へ</button><h2>これまでの記録</h2><p class="sub">結果は日付ごとに、このスマホの中に残ります。タップで開けます。</p>`+(l.length?l.map((r,k)=>{const s=r.a.filter((x,j)=>x===r.b[j]).length;return `<div class="card" onclick="hi=${k};go('hv')" style="cursor:pointer"><b>${new Date(r.d).toLocaleDateString('ja-JP')}</b><div class="sub">${esc(r.n[0]||'あなた')} × ${esc(r.n[1]||'パートナー')}／一致 ${s}・ズレ ${50-s}</div></div>`}).join(''):'<p class="sub">まだ記録がありません。</p>'))}
+function go(x){v=x;render();window.scrollTo(0,0)}
+function render(){
+if(v==="cover")return $(`<div class="cover"><div class="tag">COUPLE NOTE</div><h1>ふたりの<br>ノート</h1><div class="line"></div><p class="sub">お金・健康・家族・親のこと・自分たちのこと。<br>50のYES/NOで、お互いの頭の中を見える形に。</p>
+<button class="btn" onclick="S.cur=0;go('setup')">はじめる</button>${S.done[0]&&S.done[1]?`<button class="btn ghost" onclick="go('result')">前回の結果を見る</button>`:""}${HL().length?`<button class="btn ghost" onclick="go('hist')">これまでの記録（${HL().length}）</button>`:""}</div>`);
+if(v==="setup")return $(`<button class="back" onclick="go('cover')">← 戻る</button><h2>${S.cur?"2人目の回答":"1人目の回答"}</h2><p class="sub">相手の答えが見えない状態で、直感で答えましょう。呼び名を入力してください。</p>
+<input type="text" id="nm" placeholder="呼び名(例:たろう)" value="${esc(S.names[S.cur])}"><button class="btn" onclick="S.names[S.cur]=document.getElementById('nm').value.trim();S.ans[S.cur]=[];S.done[S.cur]=false;if(!S.cur)S.saved=false;save();i=0;go('quiz')">スタート</button>`);
+if(v==="quiz"){const q=Q[i],a=S.ans[S.cur][i],c=`var(${T[q.t][1]})`;
+return $(`<div class="top"><span>${esc(nm(S.cur))}さん</span><span>${i+1} / 50</span></div><div class="prog"><i style="width:${i/50*100}%"></i></div>
+<span class="chip" style="background:${c}">${T[q.t][0]}</span><div class="q">${esc(q.q)}</div>
+<div class="yn"><button class="y ${a===1?"on":""}" onclick="ans(1)">YES</button><button class="n ${a===0?"on":""}" onclick="ans(0)">NO</button></div>
+<button class="back" onclick="prev()">← ひとつ前</button>`)}
+if(v==="done"){const me=enc(S.ans[S.cur]);const both=S.done[0]&&S.done[1];if(both)snap();
+return $(`<h2>${esc(nm(S.cur))}さん、おつかれさま</h2><p class="sub">回答を保存しました。次はもう1人の回答です。</p>
+${both?`<button class="btn" onclick="go('result')">結果を見る</button>`:`
+<div class="card"><b>同じスマホで続ける</b><p class="sub">スマホをパートナーに渡してください。</p><button class="btn" style="margin-top:0" onclick="S.cur=${S.cur?0:1};save();go('setup')">パートナーが回答する</button></div>
+<div class="card"><b>別のスマホで回答した場合</b><p class="sub">あなたのコード(相手に送る)</p><div class="code">${me}</div>
+<p class="sub">相手のコードを入力して結果を見る</p><input type="text" id="cd" placeholder="相手のコード" autocapitalize="characters"><button class="btn ghost" onclick="useCode()">コードで結果を見る</button><p class="sub" id="err" style="color:var(--no)"></p></div>`}`);}
+if(v==="hist")return hist();if(v==="hv")return result(HL()[hi]);if(v==="result")return result();
+}
+function ans(x){S.ans[S.cur][i]=x;save();if(i<49){i++;render()}else{S.done[S.cur]=true;save();go("done")}}
+function prev(){if(i>0){i--;render()}else go("setup")}
+function useCode(){const o=dec(document.getElementById("cd").value);if(!o){document.getElementById("err").textContent="コードを確認してください";return}
+const k=S.cur?0:1;S.ans[k]=o;S.done[k]=true;if(!S.names[k])S.names[k]=k?"パートナー":"あなた";save();go("result")}
+function result(H){const A=H?H.a:S.ans[0],B=H?H.b:S.ans[1],N=H?H.n:S.names,nn=k=>N[k]||(k?"パートナー":"あなた");if(!H)snap();let m=0,g=0,x=0;
+const st=j=>A[j]===B[j]?(A[j]?"m":"x"):"g";
+Q.forEach((_,j)=>{const s=st(j);s==="m"?m++:s==="g"?g++:x++});
+const lbl={m:"2人ともYES",g:"ズレ",x:"2人ともNO"};
+let h=`<button class="back" onclick="go(H?'hist':'cover')">← ${H?'記録へ':'表紙へ'}</button><h2>${esc(nn(0))}さん × ${esc(nn(1))}さん</h2>${H?`<p class="sub">${new Date(H.d).toLocaleDateString('ja-JP')}の記録</p>`:`<p class="sub">この結果は「これまでの記録」に自動で保存されます。</p>`}
+<div class="sum"><div><b style="color:var(--yes)">${m}</b><span>2人ともYES</span></div><div><b style="color:var(--gap)">${g}</b><span>ズレ</span></div><div><b style="color:var(--no)">${x}</b><span>2人ともNO</span></div></div>`;
+T.forEach((t,ti)=>{const ids=Q.map((q,j)=>j).filter(j=>Q[j].t===ti);const c={m:0,g:0,x:0};ids.forEach(j=>c[st(j)]++);
+const order={g:0,x:1,m:2};const sorted=[...ids].sort((a,b)=>order[st(a)]-order[st(b)]);
+h+=`<details ${c.g+c.x?"open":""}><summary><span style="color:var(${t[1]})">●</span> ${t[0]}<div class="bar"><i style="width:${c.m*10}%;background:var(--yes)"></i><i style="width:${c.g*10}%;background:var(--gap)"></i><i style="width:${c.x*10}%;background:var(--no)"></i></div><span class="sub" style="font-weight:400">YES一致 ${c.m}・ズレ ${c.g}・NO一致 ${c.x}</span></summary>`+
+sorted.map(j=>{const s=st(j);return `<div class="row"><span class="b ${s}">${lbl[s]}</span><span class="t">${esc(Q[j].q)}<span class="who">${esc(nn(0))}:${A[j]?"YES":"NO"} / ${esc(nn(1))}:${B[j]?"YES":"NO"}</span></span></div>`}).join("")+`</details>`});
+h+=`<div class="card"><b>対話の時間のガイド</b><ol style="margin-top:10px"><li>各テーマで「ズレ」を2つまで選んで話す</li><li>聞く側は否定せず「どうしてそう思う？」だけ聞く</li><li>今日は理解するだけ。決めるのは次回でOK</li><li>「2人ともNO」は、2人の共通の課題として最後に確認</li><li>最後は「自分たちのこと」で温かく締める</li></ol></div>
+${H?`<button class="btn ghost" onclick="delH(hi)">この記録を削除</button>`:`<button class="btn ghost" onclick="go('cover')">表紙にもどる</button>`}`;
+$(h)}
+render();
+</script></body></html>
