@@ -69,10 +69,14 @@ function HL(){try{return JSON.parse(localStorage.getItem(HK))||[]}catch(e){retur
 function snap(){if(S.saved)return;const l=HL();l.unshift({d:new Date().toISOString(),n:S.names.slice(),a:S.ans[0].slice(),b:S.ans[1].slice()});try{localStorage.setItem(HK,JSON.stringify(l.slice(0,50)))}catch(e){}S.saved=true;save()}
 function delH(k){if(!confirm('この記録を削除しますか？'))return;const l=HL();l.splice(k,1);try{localStorage.setItem(HK,JSON.stringify(l))}catch(e){}go('hist')}
 function hist(){const l=HL();$(`<button class="back" onclick="go('cover')">← 表紙へ</button><h2>これまでの記録</h2><p class="sub">結果は日付ごとに、このスマホの中に残ります。タップで開けます。</p>`+(l.length?l.map((r,k)=>{const s=r.a.filter((x,j)=>x===r.b[j]).length;return `<div class="card" onclick="hi=${k};go('hv')" style="cursor:pointer"><b>${new Date(r.d).toLocaleDateString('ja-JP')}</b><div class="sub">${esc(r.n[0]||'あなた')} × ${esc(r.n[1]||'パートナー')}／一致 ${s}・ズレ ${50-s}</div></div>`}).join(''):'<p class="sub">まだ記録がありません。</p>'))}
+function cont(){const n=S.ans[S.cur].length;if(S.done[S.cur]&&!(S.done[0]&&S.done[1]))return `<button class="btn" onclick="go('done')">${esc(nm(S.cur))}さん分は回答済み（コードを見る）</button>`;if(n>0&&!S.done[S.cur])return `<button class="btn" onclick="i=${n};go('quiz')">回答の続きから（${n}/50）</button>`;return ""}
+function startNew(){if(S.ans[0].length>0&&!(S.done[0]&&S.done[1])&&!confirm('途中または回答済みの内容が消えます。最初からやり直しますか？'))return;S.cur=0;go('setup')}
+function restore(){const c=prompt('自分のコードを入力してください');if(!c)return;const o=dec(c);if(!o){alert('コードを確認してください');return}S.cur=0;S.ans[0]=o;S.done[0]=true;S.saved=false;save();go('done')}
+function share(c){const t='ふたりのノートの私のコード：'+c+'\n'+location.href.split('#')[0];if(navigator.share){navigator.share({text:t}).catch(()=>{})}else{try{navigator.clipboard.writeText(t);alert('コピーしました')}catch(e){prompt('コピーしてください',t)}}}
 function go(x){v=x;render();window.scrollTo(0,0)}
 function render(){
 if(v==="cover")return $(`<div class="cover"><div class="tag">COUPLE NOTE</div><h1>ふたりの<br>ノート</h1><div class="line"></div><p class="sub">お金・健康・家族・親のこと・自分たちのこと。<br>50のYES/NOで、お互いの頭の中を見える形に。</p>
-<button class="btn" onclick="S.cur=0;go('setup')">はじめる</button>${S.done[0]&&S.done[1]?`<button class="btn ghost" onclick="go('result')">前回の結果を見る</button>`:""}${HL().length?`<button class="btn ghost" onclick="go('hist')">これまでの記録（${HL().length}）</button>`:""}</div>`);
+${cont()}<button class="${S.ans[S.cur].length?"btn ghost":"btn"}" onclick="startNew()">はじめる</button>${S.done[0]&&S.done[1]?`<button class="btn ghost" onclick="go('result')">前回の結果を見る</button>`:""}${HL().length?`<button class="btn ghost" onclick="go('hist')">これまでの記録（${HL().length}）</button>`:""}${!S.done[S.cur]?`<button class="back" onclick="restore()">コードから復元する</button>`:""}</div>`);
 if(v==="setup")return $(`<button class="back" onclick="go('cover')">← 戻る</button><h2>${S.cur?"2人目の回答":"1人目の回答"}</h2><p class="sub">相手の答えが見えない状態で、直感で答えましょう。呼び名を入力してください。</p>
 <input type="text" id="nm" placeholder="呼び名(例:たろう)" value="${esc(S.names[S.cur])}"><button class="btn" onclick="S.names[S.cur]=document.getElementById('nm').value.trim();S.ans[S.cur]=[];S.done[S.cur]=false;if(!S.cur)S.saved=false;save();i=0;go('quiz')">スタート</button>`);
 if(v==="quiz"){const q=Q[i],a=S.ans[S.cur][i],c=`var(${T[q.t][1]})`;
@@ -84,7 +88,7 @@ if(v==="done"){const me=enc(S.ans[S.cur]);const both=S.done[0]&&S.done[1];if(bot
 return $(`<h2>${esc(nm(S.cur))}さん、おつかれさま</h2><p class="sub">回答を保存しました。次はもう1人の回答です。</p>
 ${both?`<button class="btn" onclick="go('result')">結果を見る</button>`:`
 <div class="card"><b>同じスマホで続ける</b><p class="sub">スマホをパートナーに渡してください。</p><button class="btn" style="margin-top:0" onclick="S.cur=${S.cur?0:1};save();go('setup')">パートナーが回答する</button></div>
-<div class="card"><b>別のスマホで回答した場合</b><p class="sub">あなたのコード(相手に送る)</p><div class="code">${me}</div>
+<div class="card"><b>別のスマホで回答する場合</b><p class="sub">相手は同じリンクを開いて、好きなタイミングで回答できます。終わったら、お互いのコードを交換してください。このコードは、回答のバックアップにもなります。</p><p class="sub">あなたのコード(相手に送る)</p><div class="code">${me}</div><button class="btn ghost" style="margin-top:4px" onclick="share('${me}')">コードを共有・コピー</button>
 <p class="sub">相手のコードを入力して結果を見る</p><input type="text" id="cd" placeholder="相手のコード" autocapitalize="characters"><button class="btn ghost" onclick="useCode()">コードで結果を見る</button><p class="sub" id="err" style="color:var(--no)"></p></div>`}`);}
 if(v==="hist")return hist();if(v==="hv")return result(HL()[hi]);if(v==="result")return result();
 }
