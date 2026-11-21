@@ -73,6 +73,12 @@ function cont(){const n=S.ans[S.cur].length;if(S.done[S.cur]&&!(S.done[0]&&S.don
 function startNew(){if(S.ans[0].length>0&&!(S.done[0]&&S.done[1])&&!confirm('途中または回答済みの内容が消えます。最初からやり直しますか？'))return;S.cur=0;go('setup')}
 function restore(){const c=prompt('自分のコードを入力してください');if(!c)return;const o=dec(c);if(!o){alert('コードを確認してください');return}S.cur=0;S.ans[0]=o;S.done[0]=true;S.saved=false;save();go('done')}
 function share(c){const t='ふたりのノートの私のコード：'+c+'\n'+location.href.split('#')[0];if(navigator.share){navigator.share({text:t}).catch(()=>{})}else{try{navigator.clipboard.writeText(t);alert('コピーしました')}catch(e){prompt('コピーしてください',t)}}}
+function shareRes(k){const r=k<0?{a:S.ans[0],b:S.ans[1],n:S.names}:HL()[k];const u=location.href.split('#')[0]+'#r='+[enc(r.a),enc(r.b),encodeURIComponent(r.n[0]||''),encodeURIComponent(r.n[1]||'')].join(',');const t='ふたりのノートの結果です。\n'+u;if(navigator.share){navigator.share({text:t}).catch(()=>{})}else{try{navigator.clipboard.writeText(t);alert('コピーしました')}catch(e){prompt('コピーしてください',t)}}}
+let SHD=null;
+function loadShared(){const m=location.hash.match(/^#r=(.+)$/);if(!m)return null;const p=m[1].split(',');const a=dec(p[0]),b=dec(p[1]);if(!a||!b)return null;let n=['',''];try{n=[decodeURIComponent(p[2]||''),decodeURIComponent(p[3]||'')]}catch(e){}return{d:new Date().toISOString(),n,a,b,shared:true}}
+function leaveShared(){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}go('cover')}
+function saveShared(){if(!SHD)return;const l=HL();l.unshift({d:SHD.d,n:SHD.n,a:SHD.a,b:SHD.b});try{localStorage.setItem(HK,JSON.stringify(l.slice(0,50)))}catch(e){}try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}go('hist')}
+function back2(t){t==2?leaveShared():t==1?go('hist'):go('cover')}
 function go(x){v=x;render();window.scrollTo(0,0)}
 function render(){
 if(v==="cover")return $(`<div class="cover"><div class="tag">COUPLE NOTE</div><h1>ふたりの<br>ノート</h1><div class="line"></div><p class="sub">お金・健康・家族・親のこと・自分たちのこと。<br>50のYES/NOで、お互いの頭の中を見える形に。</p>
@@ -90,7 +96,7 @@ ${both?`<button class="btn" onclick="go('result')">結果を見る</button>`:`
 <div class="card"><b>同じスマホで続ける</b><p class="sub">スマホをパートナーに渡してください。</p><button class="btn" style="margin-top:0" onclick="S.cur=${S.cur?0:1};save();go('setup')">パートナーが回答する</button></div>
 <div class="card"><b>別のスマホで回答する場合</b><p class="sub">相手は同じリンクを開いて、好きなタイミングで回答できます。終わったら、お互いのコードを交換してください。このコードは、回答のバックアップにもなります。</p><p class="sub">あなたのコード(相手に送る)</p><div class="code">${me}</div><button class="btn ghost" style="margin-top:4px" onclick="share('${me}')">コードを共有・コピー</button>
 <p class="sub">相手のコードを入力して結果を見る</p><input type="text" id="cd" placeholder="相手のコード" autocapitalize="characters"><button class="btn ghost" onclick="useCode()">コードで結果を見る</button><p class="sub" id="err" style="color:var(--no)"></p></div>`}`);}
-if(v==="hist")return hist();if(v==="hv")return result(HL()[hi]);if(v==="result")return result();
+if(v==="sh")return result(SHD);if(v==="hist")return hist();if(v==="hv")return result(HL()[hi]);if(v==="result")return result();
 }
 function ans(x){S.ans[S.cur][i]=x;save();if(i<49){i++;render()}else{S.done[S.cur]=true;save();go("done")}}
 function prev(){if(i>0){i--;render()}else go("setup")}
@@ -100,14 +106,14 @@ function result(H){const A=H?H.a:S.ans[0],B=H?H.b:S.ans[1],N=H?H.n:S.names,nn=k=
 const st=j=>A[j]===B[j]?(A[j]?"m":"x"):"g";
 Q.forEach((_,j)=>{const s=st(j);s==="m"?m++:s==="g"?g++:x++});
 const lbl={m:"2人ともYES",g:"ズレ",x:"2人ともNO"};
-let h=`<button class="back" onclick="go(H?'hist':'cover')">← ${H?'記録へ':'表紙へ'}</button><h2>${esc(nn(0))}さん × ${esc(nn(1))}さん</h2>${H?`<p class="sub">${new Date(H.d).toLocaleDateString('ja-JP')}の記録</p>`:`<p class="sub">この結果は「これまでの記録」に自動で保存されます。</p>`}
+let h=`<button class="back" onclick="back2(${H?(H.shared?2:1):0})">← ${H&&!H.shared?'記録へ':'表紙へ'}</button><h2>${esc(nn(0))}さん × ${esc(nn(1))}さん</h2>${H&&H.shared?`<p class="sub">共有された結果です。</p>`:H?`<p class="sub">${new Date(H.d).toLocaleDateString('ja-JP')}の記録</p>`:`<p class="sub">この結果は「これまでの記録」に自動で保存されます。</p>`}
 <div class="sum"><div><b style="color:var(--yes)">${m}</b><span>2人ともYES</span></div><div><b style="color:var(--gap)">${g}</b><span>ズレ</span></div><div><b style="color:var(--no)">${x}</b><span>2人ともNO</span></div></div>`;
 T.forEach((t,ti)=>{const ids=Q.map((q,j)=>j).filter(j=>Q[j].t===ti);const c={m:0,g:0,x:0};ids.forEach(j=>c[st(j)]++);
 const order={g:0,x:1,m:2};const sorted=[...ids].sort((a,b)=>order[st(a)]-order[st(b)]);
 h+=`<details ${c.g+c.x?"open":""}><summary><span style="color:var(${t[1]})">●</span> ${t[0]}<div class="bar"><i style="width:${c.m*10}%;background:var(--yes)"></i><i style="width:${c.g*10}%;background:var(--gap)"></i><i style="width:${c.x*10}%;background:var(--no)"></i></div><span class="sub" style="font-weight:400">YES一致 ${c.m}・ズレ ${c.g}・NO一致 ${c.x}</span></summary>`+
 sorted.map(j=>{const s=st(j);return `<div class="row"><span class="b ${s}">${lbl[s]}</span><span class="t">${esc(Q[j].q)}<span class="who">${esc(nn(0))}:${A[j]?"YES":"NO"} / ${esc(nn(1))}:${B[j]?"YES":"NO"}</span></span></div>`}).join("")+`</details>`});
 h+=`<div class="card"><b>対話の時間のガイド</b><ol style="margin-top:10px"><li>各テーマで「ズレ」を2つまで選んで話す</li><li>聞く側は否定せず「どうしてそう思う？」だけ聞く</li><li>今日は理解するだけ。決めるのは次回でOK</li><li>「2人ともNO」は、2人の共通の課題として最後に確認</li><li>最後は「自分たちのこと」で温かく締める</li></ol></div>
-${H?`<button class="btn ghost" onclick="delH(hi)">この記録を削除</button>`:`<button class="btn ghost" onclick="go('cover')">表紙にもどる</button>`}`;
+${H&&H.shared?`<button class="btn" onclick="saveShared()">この結果を自分の記録に保存</button><button class="btn ghost" onclick="leaveShared()">表紙へ</button>`:`<button class="btn" onclick="shareRes(${H?hi:-1})">結果リンクを共有</button>`+(H?`<button class="btn ghost" onclick="delH(hi)">この記録を削除</button>`:`<button class="btn ghost" onclick="go('cover')">表紙にもどる</button>`)}`;
 $(h)}
-render();
+SHD=loadShared();if(SHD)v='sh';render();
 </script></body></html>
